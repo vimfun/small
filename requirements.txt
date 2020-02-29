@@ -1,0 +1,4 @@
+## The following requirements were added by pip freeze:
+aliyun-python-sdk-core==2.13.14
+aliyun-python-sdk-slb==3.2.16
+jupyter==1.0.0
