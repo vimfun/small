@@ -89,14 +89,14 @@ def toDescribeLoadBalancersRequest():
     return request
 
 @desc_it
-def DescribeRulesRequest(LoadBalancerId="lb-2zejpbwwgitcj5b3aqqst"):
+def DescRulesRequest(LoadBalancerId="lb-2zejpbwwgitcj5b3aqqst"):
     request = DescribeRulesRequest()
     request.set_LoadBalancerId(LoadBalancerId)
     request.set_ListenerPort(80)
     return request
 
 @desc_it
-def DescribeRuleAttributeRequest(rule_id):
+def DescRuleAttributeRequest(rule_id):
     request = DescribeRuleAttributeRequest()
     request.set_accept_format('json')
 
@@ -104,23 +104,23 @@ def DescribeRuleAttributeRequest(rule_id):
     return request
 
 @desc_it
-def DescribeVServerGroupsRequest(LoadBalancerId):
+def DescVServerGroupsRequest(LoadBalancerId):
     request = DescribeVServerGroupsRequest()
     request.set_accept_format('json')
     request.set_LoadBalancerId(LoadBalancerId)
     return request
 
 @desc_it
-def DescribeVServerGroupAttributeRequest(VServerGroupId):
+def DescVServerGroupAttributeRequest(VServerGroupId):
     request = DescribeVServerGroupAttributeRequest()
     request.set_accept_format('json')
     request.set_VServerGroupId(VServerGroupId)
     return request
 
-xs = DescribeRulesRequest()
+xs = DescRulesRequest()
 
 vsg_ids = {x['VServerGroupId'] for x in xs['Rules']['Rule']}
 print(vsg_ids)
-vs_group_attr = DescribeVServerGroupAttributeRequest(vsg_ids.pop())
+vs_group_attr = DescVServerGroupAttributeRequest(vsg_ids.pop())
 print(vs_group_attr)
 
