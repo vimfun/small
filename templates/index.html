@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+    <!-- <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script> -->
+    <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script> -->
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+  <div class="container">
+		<form id="info_form" class="form-inline">
+			<div class="form-group mb-2">
+				<label for="InstanceIdInfo" class="sr-only">机器标识</label>
+				<input type="text" class="form-control" id="InstanceIdInfo"
+						placeholder="机器标识"
+					  aria-describedby="InstanceIdInfoHelp">
+				<!-- <small id="InstanceIdInfoHelp" class="form-text text-muted">可以是阿里云实例ip地址/ID.</small> -->
+			</div>
+			<button type="submit" class="btn btn-primary mb-2">确认</button>
+		</form>
+    <div id="bar" style="width:1000px; height:600px;"></div>
+  </div>
+    <script>
+        var chart = echarts.init(document.getElementById('bar'), 'white', {renderer: 'canvas'});
+
+        $(
+            function () {
+								$( "#info_form" ).submit(function( event ) {
+										alert( "Handler for .submit() called." );
+										event.preventDefault();
+								});
+
+                fetchData(chart);
+                setInterval(fetchData, 60000);
+            }
+        );
+
+				function fetchData() {
+						$.ajax({
+								type: "GET",
+								url: "http://127.0.0.1:5000/lineChart",
+								dataType: 'json',
+								success: function (result) {
+										chart.setOption(result);
+								}
+						});
+				}
+
+    </script>
+</body>
+</html>
