@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="UTF-8">
     <title>Awesome-pyecharts</title>
     <!-- <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script> -->
@@ -10,47 +10,139 @@
     <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-</head>
-<body>
-  <div class="container">
-		<form id="info_form" class="form-inline">
-			<div class="form-group mb-2">
-				<label for="InstanceIdInfo" class="sr-only">机器标识</label>
-				<input type="text" class="form-control" id="InstanceIdInfo"
-						placeholder="机器标识"
-					  aria-describedby="InstanceIdInfoHelp">
-				<!-- <small id="InstanceIdInfoHelp" class="form-text text-muted">可以是阿里云实例ip地址/ID.</small> -->
-			</div>
-			<button type="submit" class="btn btn-primary mb-2">确认</button>
-		</form>
-    <div id="bar" style="width:1000px; height:600px;"></div>
-  </div>
+  </head>
+  <body>
+    <div class="container">
+			<!--
+				<div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
+					<form id="info_form" class="form-inline">
+						<div class="form-group mb-2">
+							<label for="InstanceIdInfo" class="sr-only">机器标识</label>
+							<input type="text" class="form-control" id="InstanceIdInfo"
+																											placeholder="机器标识"
+																											aria-describedby="InstanceIdInfoHelp">
+						</div>
+						<button type="submit" class="btn btn-primary mb-2">确认</button>
+					</form>
+				</div>
+			-->
+      <div class="row">
+        <div class="col-lg-3 col-md-4 col-sm-12" id="machine_list">
+          <!-- List group -->
+          <div class="list-group" id="matchines" role="tablist">
+            <a class="list-group-item list-group-item-action active" data-toggle="list" data-instance-id='i-2zegq8vi77fk69diax62' href="#i-2zegq8vi77fk69diax62" role="tab">Home</a>
+            <a class="list-group-item list-group-item-action" data-toggle="list" href="#profile" role="tab">Profile</a>
+            <a class="list-group-item list-group-item-action" data-toggle="list" href="#messages" role="tab">Messages</a>
+            <a class="list-group-item list-group-item-action" data-toggle="list" href="#settings" role="tab">Settings</a>
+          </div>
+        </div>
+
+        <div class="col-lg-9 col-md-8 col-sm-12" style="background-color:yellow">
+          <!-- Tab panes -->
+          <div class="tab-content" id="matchines-content">
+            <div class="tab-pane active" id="i-2zegq8vi77fk69diax62" role="tabpanel">
+              <div class="line-chart" style="width: 100%; height:600px;"></div>
+            </div>
+            <div class="tab-pane" id="profile" role="tabpanel">
+              <div class="line-chart" style="width: 100%; height:600px;"></div>
+            </div>
+            <div class="tab-pane" id="messages" role="tabpanel">
+              <div class="line-chart" style="width: 100%; height:600px;"></div>
+            </div>
+            <div class="tab-pane" id="settings" role="tabpanel">
+              <div class="line-chart" style="width: 100%; height:600px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+    </div>
     <script>
-        var chart = echarts.init(document.getElementById('bar'), 'white', {renderer: 'canvas'});
 
-        $(
-            function () {
-								$( "#info_form" ).submit(function( event ) {
-										alert( "Handler for .submit() called." );
-										event.preventDefault();
-								});
+$(function () {
+	$( "#info_form" ).submit(function( event ) {
+		alert( "Handler for .submit() called." );
+		alert($("#InstanceIdInfo").val())
+		event.preventDefault();
+	});
 
-                fetchData(chart);
-                setInterval(fetchData, 60000);
-            }
-        );
+	$("#matchines").on('click', '.list-group-item', function() {
+		const instanceId = $(this).data("instanceId");
+		const instanceName = $(this).data("instanceName");
+		if (instanceId) {
+			const domElement = document.querySelector(`#${instanceId} > .line-chart`);
+      setTimeout(
+        () => showData(instanceId, instanceName, domElement),
+        300
+      )
+		}
+	})
 
-				function fetchData() {
-						$.ajax({
-								type: "GET",
-								url: "http://127.0.0.1:5000/lineChart",
-								dataType: 'json',
-								success: function (result) {
-										chart.setOption(result);
-								}
-						});
-				}
+  fetchListItems();
+});
 
+function showData(machineIdOrIp, instanceName, domElement) {
+  var chart = echarts.init(domElement, 'light', {renderer: 'canvas', width: 'auto'});
+  _fetchData(machineIdOrIp, instanceName, 5000, chart);
+}
+
+/**
+ * Fetch data and set options of echart instance with interval settings.
+ * Default interval is 3 mins
+ */
+const _fetchData = (function() {
+	let intervalID = undefined;
+	return (machineIdOrIp, instanceName, interval=3 * 60 * 1000, chart) => {
+		fetchData(machineIdOrIp, chart);
+		if (intervalID) {
+			intervalID = clearInterval(intervalID)
+		}
+		intervalID = setInterval(fetchData, interval, machineIdOrIp, instanceName, chart);
+	}
+})()
+
+// Fetch data and set options of echart instance.
+function fetchData(machineIdOrIp, instanceName, chart) {
+	$.ajax({
+		type: "GET",
+		url: "/lineChart?machineIdOrIp=" + machineIdOrIp + '&instanceName=' + instanceName,
+		dataType: 'json',
+		success: function (result) {
+			chart.setOption(result);
+		}
+	});
+}
+
+// Fetch data and set options of echart instance.
+function fetchListItems() {
+	$.ajax({
+		type: "GET",
+		url: "/aliyun/ecs/instances",
+		dataType: 'json',
+		success: function (instances) {
+			const listItems = instances['Instances'].map(listItem)
+			const listItemsContent = instances['Instances'].map(listItemContent)
+      $('#matchines').html(listItems.join(''))
+      $('#matchines-content').html(listItemsContent.join(''))
+			console.log(listItems.join('').length)
+			console.log(listItemsContent.join('').length)
+		}
+	});
+}
+function listItem(instanceInfo) {
+	return `<a class="list-group-item list-group-item-action" data-toggle="list" role="tab"
+			data-instance-id='${instanceInfo["InstanceId"]}'
+			data-instance-name='${instanceInfo["InstanceName"]}'
+			href='#${instanceInfo["InstanceId"]}'>
+		${instanceInfo["InstanceName"]} - ${instanceInfo['NetworkInterfaces']['NetworkInterface'][0]['PrimaryIpAddress']}
+	</a>`
+}
+function listItemContent(instanceInfo) {
+  return `<div class="tab-pane" id="${instanceInfo["InstanceId"]}" role="tabpanel">
+    <div class="line-chart" style="width: 100%; height:600px;"></div>
+  </div>`
+}
     </script>
-</body>
+  </body>
 </html>

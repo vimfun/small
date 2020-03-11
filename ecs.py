@@ -1,4 +1,4 @@
-from aliyun import client, desc_it
+from aliyun import client, desc_it, result_mapper
 
 from aliyunsdkecs.request.v20140526.AcceptInquiredSystemEventRequest import AcceptInquiredSystemEventRequest
 from aliyunsdkecs.request.v20140526.ActivateRouterInterfaceRequest import ActivateRouterInterfaceRequest
@@ -280,6 +280,23 @@ def desc_ECS_insts():
 
     response = client.do_action_with_exception(request)
     print(str(response, encoding='utf-8'))
+
+
+@result_mapper(
+    lambda x: {
+        'Instances': x['Instances']['Instance'],
+        'TotalCount': x['TotalCount'],
+        'PageSize': x['PageSize'],
+        'PageNumber': x['PageNumber']
+    }
+)
+@desc_it
+def get_instances(status='Running', pageSize=100):
+    r = DescribeInstancesRequest()
+    r.set_Status('Running')
+    r.set_PageSize(pageSize)
+    return r
+
 
 @desc_it
 def DescRegionsRequest():

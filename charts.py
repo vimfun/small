@@ -43,7 +43,7 @@ def metric(instanceId, period=300, mname="CPUUtilization"):
     return r
 
 
-def build_cpu_chart(instance_id, period):
+def build_cpu_chart(instance_id, instance_name, period):
     # {'timestamp': 1583448900000,
     #  'userId': '1844184023992394',
     #  'instanceId': 'i-2zeblswgio3fz18ssvs7',
@@ -73,7 +73,7 @@ def build_cpu_chart(instance_id, period):
         map(lambda k: (k, list(map(lambda x: x[k], xs))),
             ['timestamp', 'Maximum', 'Average', 'Minimum']))
     return build_line_chart(
-        title= 'CPU chart %s' % instance_id,
+        title= 'CPU chart [%s]' % instance_name,
         xaxis=list(map(lambda x: datetime.fromtimestamp(x/1000), a[1])),
         yaxis=[x, y, z])
 

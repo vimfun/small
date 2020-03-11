@@ -1,11 +1,15 @@
 from random import randrange
 
 from flask.json import jsonify
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+from jinja2 import Markup, Environment, FileSystemLoader
 
 from pyecharts import options as opts
 from pyecharts.charts import Bar, Line
+from pyecharts.globals import CurrentConfig
 
+
+CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates"))
 
 app = Flask(__name__, static_folder="templates")
 
@@ -32,6 +36,9 @@ def line_base(): # -> Line:
 @app.route("/")
 def index():
     return render_template("index.html")
+    # from charts import build_cpu_chart
+    # c = build_cpu_chart('i-2ze99ni7tsf7pgz6y62e', period=120)
+    # return Markup(c.render_embed())
 
 
 # @app.route("/lineChart")
@@ -44,9 +51,16 @@ def get_line_chart():
 @app.route("/lineChart")
 def get_instance_chart():
     from charts import build_cpu_chart
-    c = build_cpu_chart('i-2ze99ni7tsf7pgz6y62e', period=120)
+    instanceId = request.args['machineIdOrIp']
+    instanceName = request.args['instanceName']
+    c = build_cpu_chart(instanceId, instanceName, period=300)
     return c.dump_options_with_quotes()
 
+
+@app.route("/aliyun/ecs/instances")
+def get_aliyun_ecs_instances():
+    import ecs
+    return jsonify(ecs.get_instances())
 
 if __name__ == "__main__":
     app.run()
