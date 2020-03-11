@@ -1,4 +1,6 @@
-## The following requirements were added by pip freeze:
+aliyun-python-sdk-cms==7.0.10
 aliyun-python-sdk-core==2.13.14
+aliyun-python-sdk-ecs==4.18.3
 aliyun-python-sdk-slb==3.2.16
 jupyter==1.0.0
+Flask==1.1.1
