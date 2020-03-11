@@ -5,6 +5,7 @@
     <title>Awesome-pyecharts</title>
     <!-- <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script> -->
     <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script src="https://underscorejs.bootcss.com/underscore-min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script> -->
     <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
@@ -121,7 +122,7 @@ function fetchListItems() {
 		url: "/aliyun/ecs/instances",
 		dataType: 'json',
 		success: function (instances) {
-			const listItems = instances['Instances'].map(listItem)
+      const listItems = _.sortBy(instances['Instances'], x => -(x.topN_metric[0].Maximum)).map(listItem)
 			const listItemsContent = instances['Instances'].map(listItemContent)
       $('#matchines').html(listItems.join(''))
       $('#matchines-content').html(listItemsContent.join(''))
@@ -130,11 +131,34 @@ function fetchListItems() {
 		}
 	});
 }
+
 function listItem(instanceInfo) {
-	return `<a class="list-group-item list-group-item-action" data-toggle="list" role="tab"
+  const LEVELS = [[0, 1], [1,20], [20, 50], [50, 80], [80, 100]]
+  const LEVEL_CLASSES = [
+    "list-group-item-dark",
+    "list-group-item-light",
+    "list-group-item-success",
+    "list-group-item-warning",
+    "list-group-item-danger"
+    // "list-group-item-primary",
+    // "list-group-item-secondary",
+    // "list-group-item-info",
+  ]
+
+  function get_contextual_class(n) {
+    const x = _.find(
+      _.zip(LEVELS, LEVEL_CLASSES),
+      x => x[0][0] <= n && n <= x[0][1]
+    );
+    return x[1];
+  }
+
+  let contextual_class = get_contextual_class(instanceInfo.topN_metric[0].Maximum)
+  return `<a class="list-group-item list-group-item-action ${contextual_class}" data-toggle="list" role="tab"
 			data-instance-id='${instanceInfo["InstanceId"]}'
 			data-instance-name='${instanceInfo["InstanceName"]}'
 			href='#${instanceInfo["InstanceId"]}'>
+    [cpu: ${instanceInfo.topN_metric[0].Maximum}]
 		${instanceInfo["InstanceName"]} - ${instanceInfo['NetworkInterfaces']['NetworkInterface'][0]['PrimaryIpAddress']}
 	</a>`
 }

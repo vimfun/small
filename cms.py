@@ -1,3 +1,8 @@
+from itertools import groupby
+import json
+
+from aliyun import desc_it, result_mapper
+
 from aliyunsdkcms.request.v20190101.AddTagsRequest import AddTagsRequest
 from aliyunsdkcms.request.v20190101.ApplyMetricRuleTemplateRequest import ApplyMetricRuleTemplateRequest
 from aliyunsdkcms.request.v20190101.CreateDynamicTagGroupRequest import CreateDynamicTagGroupRequest
@@ -116,3 +121,48 @@ from aliyunsdkcms.request.v20190101.PutResourceMetricRulesRequest import PutReso
 from aliyunsdkcms.request.v20190101.RemoveTagsRequest import RemoveTagsRequest
 from aliyunsdkcms.request.v20190101.SendDryRunSystemEventRequest import SendDryRunSystemEventRequest
 from aliyunsdkcms.request.v20190101.UninstallMonitoringAgentRequest import UninstallMonitoringAgentRequest
+
+
+@desc_it
+def metric(instance_ids, period=300, mname="CPUUtilization"):
+    r =  DescribeMetricListRequest()
+    r.set_Namespace('acs_ecs_dashboard')
+    r.set_MetricName(mname)
+    r.set_Dimensions([{"instanceId": iid} for iid in instance_ids])
+    r.set_Period(period)
+    return r
+
+def get_metric_infos(instance_ids, top_n=1, period=60):
+    ds = map(
+            lambda x: _get_metric_infos(instance_ids[x[0]*50:x[1]*50], top_n, period),
+            zip(
+                range(len(instance_ids)//50 + 1),
+                range(1, len(instance_ids)//50 + 2)))
+
+    res = {}
+    for d in ds:
+        res.update(d)
+
+    return res
+
+
+def _get_metric_infos(instance_ids, top_n=1, period=60):
+    # dp = metric(instance_ids=instance_ids, period=period)
+    # import pdb; pdb.set_trace()
+    datapoints = json.loads(
+        metric(instance_ids=instance_ids, period=period)["Datapoints"]
+    )
+    print('len(datapoints): ', len(datapoints))
+
+    key = lambda x: x['instanceId']
+    def handle_one_instance_metric(x):
+        iid, xs = x
+        return (iid, sorted(list(xs), key=lambda x: x['Maximum'])[-top_n:])
+
+    return dict(
+        map(
+            handle_one_instance_metric, 
+            groupby(
+                sorted(datapoints, key=key),
+                key=key,
+            )))

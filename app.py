@@ -1,4 +1,5 @@
 from random import randrange
+import threading
 
 from flask.json import jsonify
 from flask import Flask, render_template, request
@@ -7,6 +8,8 @@ from jinja2 import Markup, Environment, FileSystemLoader
 from pyecharts import options as opts
 from pyecharts.charts import Bar, Line
 from pyecharts.globals import CurrentConfig
+import ecs
+import cms
 
 
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates"))
@@ -57,10 +60,21 @@ def get_instance_chart():
     return c.dump_options_with_quotes()
 
 
+@app.route("/aliyun/ecs/instances0")
+def get_aliyun_ecs_instances0():
+    instances = ecs.get_instances()
+    return jsonify(instances)
+
 @app.route("/aliyun/ecs/instances")
 def get_aliyun_ecs_instances():
-    import ecs
-    return jsonify(ecs.get_instances())
+    instances = ecs.get_instances()
+
+    metrics = cms.get_metric_infos([ins['InstanceId'] for ins in instances['Instances']], 1)
+    for instance in instances['Instances']:
+        instance["topN_metric"] = metrics[instance['InstanceId']]
+
+    return jsonify(instances)
+
 
 if __name__ == "__main__":
     app.run()
