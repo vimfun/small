@@ -306,5 +306,17 @@ def DescRegionsRequest():
 
 if __name__ == '__main__':
     # desc_ECS_insts()
-    print(DescRegionsRequest())
-
+    import json
+    def build_for_zabbix(instance):
+        return {
+            "{#ALI_INSTANCE_NAME}": instance['InstanceName'],
+            "{#ALI_INSTANCE_ID}": instance['InstanceId'],
+            "{#ALI_INSTANCE_MAIN_IP}": instance['NetworkInterfaces']['NetworkInterface'][0]['PrimaryIpAddress'],
+        }
+    ins =  get_instances()
+    print(
+        json.dumps(
+            list(map(build_for_zabbix, ins['Instances'])),
+            indent=2
+        )
+    )

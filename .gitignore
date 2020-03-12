@@ -3,3 +3,4 @@ config.py
 .venv/
 .ipynb_checkpoints/
 .*.swp
+*.pyc
