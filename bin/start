@@ -1,0 +1,2 @@
+if [ ! -d .venv ]; then sh bin/init; fi
+source .venv/bin/activate && flask run -h 0.0.0.0
