@@ -316,7 +316,7 @@ if __name__ == '__main__':
     ins =  get_instances()
     print(
         json.dumps(
-            list(map(build_for_zabbix, ins['Instances'])),
+            {'data': list(map(build_for_zabbix, ins['Instances']))},
             indent=2
         )
     )
