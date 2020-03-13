@@ -124,17 +124,17 @@ from aliyunsdkcms.request.v20190101.UninstallMonitoringAgentRequest import Unins
 
 
 @desc_it
-def metric(instance_ids, period=300, mname="CPUUtilization"):
+def metric(instance_ids, period=300, name="CPUUtilization"):
     r =  DescribeMetricListRequest()
     r.set_Namespace('acs_ecs_dashboard')
-    r.set_MetricName(mname)
+    r.set_MetricName(name)
     r.set_Dimensions([{"instanceId": iid} for iid in instance_ids])
     r.set_Period(period)
     return r
 
-def get_metric_infos(instance_ids, top_n=1, period=60):
+def get_metric_infos(instance_ids, name='CPUUtilization', top_n=1, period=60):
     ds = map(
-            lambda x: _get_metric_infos(instance_ids[x[0]*50:x[1]*50], top_n, period),
+            lambda x: _get_metric_infos(instance_ids[x[0]*50:x[1]*50], top_n=top_n, period=period, name=name),
             zip(
                 range(len(instance_ids)//50 + 1),
                 range(1, len(instance_ids)//50 + 2)))
@@ -146,13 +146,12 @@ def get_metric_infos(instance_ids, top_n=1, period=60):
     return res
 
 
-def _get_metric_infos(instance_ids, top_n=1, period=60):
+def _get_metric_infos(instance_ids, name='memory_usedutilization', top_n=1, period=60):
     # dp = metric(instance_ids=instance_ids, period=period)
     # import pdb; pdb.set_trace()
     datapoints = json.loads(
-        metric(instance_ids=instance_ids, period=period)["Datapoints"]
+        metric(instance_ids=instance_ids, name=name, period=period)["Datapoints"]
     )
-    print('len(datapoints): ', len(datapoints))
 
     key = lambda x: x['instanceId']
     def handle_one_instance_metric(x):
@@ -166,3 +165,19 @@ def _get_metric_infos(instance_ids, top_n=1, period=60):
                 sorted(datapoints, key=key),
                 key=key,
             )))
+
+
+if __name__ == '__main__':
+    import sys
+    instance_id = sys.argv[1]
+    metric_name = sys.argv[2]
+    # print(get_metric_infos([instance_id], name='memory_usedutilization')[instance_id][0]['Maximum'])
+    res = get_metric_infos([instance_id], name=metric_name)
+
+    value = -1 if len(res) == 0 else res[instance_id][0]['Maximum']
+
+    print(value)
+
+    print(get_metric_infos([instance_id], name='memory_usedutilization'))
+    print(get_metric_infos([instance_id], name='cpu_idle'))
+    print(get_metric_infos([instance_id], name='CPUUtilization'))
