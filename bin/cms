@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 cpath=$(realpath $0)
 cd $(dirname $(dirname $cpath))
-source .venv/bin/activate && python ecs.py
+source .venv/bin/activate && python cms.py $1 $2 $3

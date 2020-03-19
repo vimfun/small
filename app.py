@@ -69,7 +69,7 @@ def get_aliyun_ecs_instances0():
 def get_aliyun_ecs_instances():
     instances = ecs.get_instances()
 
-    metrics = cms.get_metric_infos([ins['InstanceId'] for ins in instances['Instances']], 1)
+    metrics = cms.get_metric_infos([ins['InstanceId'] for ins in instances['Instances']], top_n=1)
     for instance in instances['Instances']:
         instance["topN_metric"] = metrics[instance['InstanceId']]
 

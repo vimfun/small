@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+abspath=$(realpath $0)
+echo $(dirname $abspath)
+echo $(dirname $(dirname $abspath))
+echo $(dirname $(dirname $(dirname $abspath)))
+cd $(dirname $(dirname $(dirname $abspath)))
+
+. .venv/bin/activate && python ecs.py |head

@@ -1,2 +1,6 @@
+#!/usr/bin/zsh
+cpath=$(realpath $0)
+cd $(dirname $(dirname $cpath))
+
 if [ ! -d .venv ]; then sh bin/init; fi
 source .venv/bin/activate && flask run -h 0.0.0.0
