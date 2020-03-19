@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
-cpath=$(realpath $0)
-cd $(dirname $(dirname $cpath))
+cd $(dirname $(dirname $0))
+
+if [ ! -d .venv ]; then sh bin/init; fi
+
 source .venv/bin/activate && python cms.py $1 $2 $3

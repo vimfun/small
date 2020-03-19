@@ -132,9 +132,9 @@ def metric(instance_ids, period=300, name="CPUUtilization", namespace="acs_ecs_d
     r.set_Period(period)
     return r
 
-def get_metric_infos(instance_ids, name='CPUUtilization', namespace='acs_ecs_dashboard', top_n=1, period=60):
+def get_metric_infos(instance_ids, name='CPUUtilization', namespace='acs_ecs_dashboard', top=False, top_n=1, period=60):
     ds = map(
-            lambda x: _get_metric_infos(instance_ids[x[0]*50:x[1]*50], top_n=top_n, period=period, name=name, namespace=namespace),
+            lambda x: _get_metric_infos(instance_ids[x[0]*50:x[1]*50], top=top, top_n=top_n, period=period, name=name, namespace=namespace),
             zip(
                 range(len(instance_ids)//50 + 1),
                 range(1, len(instance_ids)//50 + 2)))
@@ -146,25 +146,34 @@ def get_metric_infos(instance_ids, name='CPUUtilization', namespace='acs_ecs_das
     return res
 
 
-def _get_metric_infos(instance_ids, name='memory_usedutilization', top_n=1, period=60, namespace='acs_ecs_dashboard'):
+def _get_metric_infos(instance_ids, name='memory_usedutilization', top=False, top_n=1, period=60, namespace='acs_ecs_dashboard'):
     # dp = metric(instance_ids=instance_ids, name=name, period=period, namespace=namespace)
     # import pdb; pdb.set_trace()
     datapoints = json.loads(
         metric(instance_ids=instance_ids, name=name, period=period, namespace=namespace)["Datapoints"]
     )
 
+    # import pdb; pdb.set_trace()
+    if not top:
+        new_metric = datapoints[-1]
+        return {
+            new_metric['instanceId']: [new_metric]
+        }
+
     key = lambda x: x['instanceId']
     def handle_one_instance_metric(x):
         iid, xs = x
         return (iid, sorted(list(xs), key=lambda x: x['Maximum'])[-top_n:])
 
-    return dict(
+    res = dict(
         map(
             handle_one_instance_metric, 
             groupby(
                 sorted(datapoints, key=key),
                 key=key,
             )))
+    import pdb; pdb.set_trace()
+    return res
 
 
 if __name__ == '__main__':

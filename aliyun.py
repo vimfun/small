@@ -13,6 +13,7 @@ def desc_it(func):
         request = func(*args, **kwargs)
         response = client.do_action_with_exception(request)
         # print(str(response, encoding='utf-8'))
+        response = response.decode('utf-8') if type(response) == bytes else response
         return json.loads(response)
     return _
 
